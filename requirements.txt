@@ -1,0 +1,1 @@
+-e "streamlit\nplotly\npandas\nnumpy" 
