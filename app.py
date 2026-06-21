@@ -144,7 +144,7 @@ with tab2:
 with tab3:
     st.subheader("🤖 AI聊天机器人 (DeepSeek)")
     
-    API_KEY = os.environ.get("AI_API_KEY", "")
+    API_KEY = st.secrets.get("AI_API_KEY", "") or os.environ.get("AI_API_KEY", "")
     
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -159,16 +159,19 @@ with tab3:
         
         if API_KEY:
             try:
-                import openai
-                client = openai.OpenAI(
-                    api_key=API_KEY,
-                    base_url="https://api.deepseek.com"
-                )
-                response = client.chat.completions.create(
-                    model="deepseek-chat",
-                    messages=[{"role": "user", "content": prompt}]
-                )
-                reply = response.choices[0].message.content
+                import requests
+                url = "https://api.deepseek.com/v1/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {API_KEY}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": "deepseek-chat",
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+                response = requests.post(url, headers=headers, json=data)
+                response.raise_for_status()
+                reply = response.json()["choices"][0]["message"]["content"]
             except Exception as e:
                 reply = f"AI 调用失败：{str(e)}"
         else:
